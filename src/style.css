@@ -58,6 +58,15 @@ button:focus-visible {
   padding: 2em;
 }
 
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  list-style: none;
+}
+
 #app {
   max-width: 1280px;
   margin: 0 auto;

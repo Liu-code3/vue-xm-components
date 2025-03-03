@@ -1,12 +1,145 @@
 <script setup lang="ts">
-  import down from './components/down.vue'
+import { onMounted, ref } from 'vue'
+import down from './components/down.vue'
+import { provinceData } from './utils/province.ts'
+import { fillSelect, setTitleText } from "./utils/format.ts";
+import type { AreaData, ExtendedHTMLElement } from './type/index'
+
+
+const props = defineProps({
+  areaDataList: {
+    type: Array as () => AreaData[],
+    default: provinceData
+  }
+})
+
+const provinceRef = ref<ExtendedHTMLElement>()
+const cityRef = ref<ExtendedHTMLElement>()
+const areaRef = ref<ExtendedHTMLElement>()
+
+function init () {
+  fillSelect(provinceRef.value!, props.areaDataList)
+  fillSelect(cityRef.value!, [])
+  fillSelect(areaRef.value!, [])
+
+  regCommonEvent(provinceRef.value!)
+  regCommonEvent(cityRef.value!)
+  regCommonEvent(areaRef.value!)
+
+  regProvinceEvent()
+  regCityEvent()
+}
+
+onMounted(() => {
+  init()
+})
+
+/**
+ * 注册公共的事件处理
+ * @param {HTMLElement} select 下拉框dom元素
+ */
+function regCommonEvent (select: HTMLElement) {
+  // 1.title点击事件 - 打开下拉框
+  const titleDom = select.querySelector('.title')
+  if(!titleDom) {
+    console.error('titleDom is null')
+    return
+  }
+  titleDom.addEventListener('click', () => {
+    // 禁用状态下无法操作
+    if(select.classList.contains('disabled')) return
+
+    // 清除所有下拉框的下拉状态
+    const selectDomList = document.querySelectorAll('.select.expand')
+    for (const sel of selectDomList) {
+      if(sel !== select) {
+        sel.classList.remove('expand')
+      }
+    }
+    // 切换当前的下拉状态即可
+    select.classList.toggle('expand')
+  })
+
+  // 2.ul点击事件 - 下拉框内容选择
+  const ulDom = select.querySelector('.options')
+  if(!ulDom) {
+    console.error('ulDom is null')
+    return;
+  }
+
+  ulDom.addEventListener('click', (e: Event) => {
+    const target = e.target as HTMLElement;
+    if(!target) return;
+    if(target.tagName !== 'LI') return
+
+    // 获取到之前选中的li元素
+    const beforeActiveLi = select.querySelector('li.active')
+    // 当刚打开下拉框的时候 此前都未选中 所以得做一个判定
+    beforeActiveLi && beforeActiveLi.classList.remove('active')
+    target.classList.add('active')
+
+    // 设置当前选中的值
+    setTitleText(select, target.textContent || '')
+    select.classList.remove('expand')
+  })
+}
+
+/**
+ * 注册省份的特殊点击事件
+ */
+function regProvinceEvent () {
+  const ul = provinceRef.value!.querySelector('.options')
+  if(!ul) {
+    console.error('ulDom is null')
+    return;
+  }
+  ul.addEventListener('click', (e: Event) => {
+    const target = e.target as HTMLElement;
+    if(target?.tagName !== 'LI') return
+
+    // 填充城市
+    const pr = provinceRef.value?.datas?.find((item: AreaData) => item.label === target.textContent)
+    if (pr) {
+      fillSelect(cityRef.value!, pr.children || [])
+      // 填充地区
+      fillSelect(areaRef.value!, [])
+    }
+  })
+}
+
+/**
+ * 注册城市的特殊点击事件
+ */
+function regCityEvent () {
+  const ul = cityRef.value!.querySelector('.options')
+  if(!ul) {
+    console.error('ulDom is null')
+    return;
+  }
+  ul.addEventListener('click', (e: Event) => {
+    const target = e.target as HTMLElement;
+    if(target?.tagName !== 'LI') return
+
+    // 填充城市
+    const city = cityRef.value?.datas?.find((item: AreaData) => item.label === target.textContent)
+    if (city) {
+      fillSelect(areaRef.value!, city.children || [])
+    }
+  })
+}
+
 </script>
 
 <template>
   <div>
     <!-- expand 展开类名 -->
     <!-- disabled 禁用框类名 -->
-    <div class="select" id="selProvince" data-tip="省份">
+    <div
+        class="select"
+        id="selProvince"
+        data-tip="省份"
+        ref="provinceRef"
+    >
       <div class="title">
         <span>请选择省份</span>
         <down />
@@ -14,7 +147,12 @@
       <ul class="options"></ul>
     </div>
 
-    <div class="select" id="selCity" data-tip="市区">
+    <div
+        class="select"
+        id="selCity"
+        data-tip="市区"
+        ref="cityRef"
+    >
       <div class="title">
         <span>请选择市区</span>
         <down />
@@ -22,7 +160,12 @@
       <ul class="options"></ul>
     </div>
 
-    <div class="select" id="selArea" data-tip="区县">
+    <div
+        class="select"
+        id="selArea"
+        data-tip="区县"
+        ref="areaRef"
+    >
       <div class="title">
         <span>请选择区县</span>
         <down />
@@ -33,15 +176,6 @@
 </template>
 
 <style scoped>
-ul {
-  padding: 0;
-  margin: 0;
-}
-
-li {
-  list-style: none;
-}
-
 .select {
   display: inline-block;
   margin: 0 5px;
