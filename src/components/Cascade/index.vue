@@ -3,12 +3,11 @@ import { onMounted, ref } from 'vue'
 import down from './components/down.vue'
 import { provinceData } from './utils/province.ts'
 import { fillSelect, setTitleText } from "./utils/format.ts";
-import type { AreaData, ExtendedHTMLElement } from './type/index'
-
+import type { IData, ExtendedHTMLElement } from './type/index'
 
 const props = defineProps({
   areaDataList: {
-    type: Array as () => AreaData[],
+    type: Array as () => IData[],
     default: provinceData
   }
 })
@@ -88,17 +87,17 @@ function regCommonEvent (select: HTMLElement) {
  * 注册省份的特殊点击事件
  */
 function regProvinceEvent () {
-  const ul = provinceRef.value!.querySelector('.options')
-  if(!ul) {
+  const ulDom = provinceRef.value!.querySelector('.options')
+  if(!ulDom) {
     console.error('ulDom is null')
     return;
   }
-  ul.addEventListener('click', (e: Event) => {
+  ulDom.addEventListener('click', (e: Event) => {
     const target = e.target as HTMLElement;
     if(target?.tagName !== 'LI') return
 
     // 填充城市
-    const pr = provinceRef.value?.datas?.find((item: AreaData) => item.label === target.textContent)
+    const pr = provinceRef.value?.datas?.find((item: IData) => item.label === target.textContent)
     if (pr) {
       fillSelect(cityRef.value!, pr.children || [])
       // 填充地区
@@ -111,17 +110,17 @@ function regProvinceEvent () {
  * 注册城市的特殊点击事件
  */
 function regCityEvent () {
-  const ul = cityRef.value!.querySelector('.options')
-  if(!ul) {
+  const ulDom = cityRef.value!.querySelector('.options')
+  if(!ulDom) {
     console.error('ulDom is null')
     return;
   }
-  ul.addEventListener('click', (e: Event) => {
+  ulDom.addEventListener('click', (e: Event) => {
     const target = e.target as HTMLElement;
     if(target?.tagName !== 'LI') return
 
     // 填充城市
-    const city = cityRef.value?.datas?.find((item: AreaData) => item.label === target.textContent)
+    const city = cityRef.value?.datas?.find((item: IData) => item.label === target.textContent)
     if (city) {
       fillSelect(areaRef.value!, city.children || [])
     }
