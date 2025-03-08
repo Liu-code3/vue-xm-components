@@ -1,5 +1,5 @@
 import { UserConfig } from 'vite'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 
 import vue from '@vitejs/plugin-vue'
 
@@ -21,6 +21,18 @@ export default (): UserConfig => {
           replacement: pathResolve('src') + '/',
         },
       ],
-    }
+    },
+    server: {
+      port: 6161,
+      host: '0.0.0.0',
+      open: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3000',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+      },
+    },
   }
 }
