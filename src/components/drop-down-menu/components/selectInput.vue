@@ -2,7 +2,7 @@
   import { throttle } from "@/utils/tool.ts";
   import Down from "@/components/Cascade/components/down.vue";
 
-  const props = defineProps<{
+  defineProps<{
     value: string;
   }>()
 
