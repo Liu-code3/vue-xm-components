@@ -35,7 +35,7 @@ withDefaults(defineProps<{
       <slot name="avatar">
         <img v-if="avatar" class="xm-bubble__avatar-img" :src="avatar" :alt="name || 'avatar'" />
         <span v-else class="xm-bubble__avatar-fallback">
-          <svg v-if="placement === 'start' && !name" viewBox="0 0 16 16" aria-hidden="true">
+          <svg v-if="placement === 'start'" viewBox="0 0 16 16" aria-hidden="true">
             <path
                 d="M8 1.6 9.3 5.5 13.2 6.8 9.3 8.1 8 12 6.7 8.1 2.8 6.8 6.7 5.5Z"
                 fill="currentColor"
@@ -78,6 +78,8 @@ withDefaults(defineProps<{
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  /* 整行占满，靠左 / 靠右由 flex-direction 决定，父容器不用关心对齐 */
+  width: 100%;
 }
 
 .xm-bubble--end {
