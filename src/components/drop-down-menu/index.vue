@@ -12,7 +12,7 @@ interface MenuItem {
   [key: string]: any;
 }
 
-const props = defineProps<{
+defineProps<{
   menuData: MenuItem[];
 }>()
 
