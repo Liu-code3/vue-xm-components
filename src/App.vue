@@ -1,10 +1,73 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import Bubble from '@/components/bubble/index.vue'
+import Sender from '@/components/sender/index.vue'
+import Prompts from '@/components/prompts/index.vue'
+import Actions from '@/components/actions/index.vue'
 import ThoughtChain from '@/components/thought-chain/index.vue'
 import Cascader from '@/components/Cascade/index.vue'
 import type { ThoughtChainItem, ThoughtChainStatus } from '@/components/thought-chain/type'
+import type { PromptItem } from '@/components/prompts/type'
+import type { ActionItem } from '@/components/actions/type'
 
-/* ---------------- 演示一：Agent 调用工具的完整链路 ---------------- */
+/* ---------------- 对话数据 ---------------- */
+
+interface ChatMessage {
+  id: number
+  role: 'user' | 'assistant'
+  content?: string
+  /** 这条消息里嵌入思维链 */
+  chain?: boolean
+}
+
+let messageId = 3
+const messages = ref<ChatMessage[]>([
+  { id: 1, role: 'assistant', content: '你好，我是 XMUI 助手。可以帮你查天气、总结文档、排查构建问题。' },
+  { id: 2, role: 'user', content: '明天杭州天气怎么样？' },
+  { id: 3, role: 'assistant', chain: true }
+])
+
+const draft = ref('')
+const chatRef = ref<HTMLElement>()
+const senderRef = ref<InstanceType<typeof Sender> | null>(null)
+
+async function scrollToBottom() {
+  await nextTick()
+  const el = chatRef.value
+  if (el) el.scrollTop = el.scrollHeight
+}
+
+function onSubmit(text: string) {
+  if (!text) return
+  messages.value.push({ id: ++messageId, role: 'user', content: text })
+  draft.value = ''
+  void scrollToBottom()
+
+  window.setTimeout(() => {
+    messages.value.push({
+      id: ++messageId,
+      role: 'assistant',
+      content: '收到，我按这个思路继续处理。你可以先看看上面的执行链路，每一步都会实时更新状态。'
+    })
+    void scrollToBottom()
+  }, 500)
+}
+
+/* ---------------- 提示词 ---------------- */
+
+const promptItems: PromptItem[] = [
+  { key: 'p1', label: '明天杭州天气', description: '调用天气工具查询', icon: '🌤' },
+  { key: 'p2', label: '总结这份文档', description: '提炼要点与结论', icon: '📄' },
+  { key: 'p3', label: '排查构建报错', description: '定位类型错误', icon: '🧩' },
+  { key: 'p4', label: '写一个组件单测', description: '生成 Vitest 用例', icon: '🧪' }
+]
+
+function onPrompt(item: PromptItem) {
+  draft.value = item.label
+  senderRef.value?.focus()
+}
+
+/* ---------------- 思维链：模拟工具调用 ---------------- */
 
 function createAgentSteps(): ThoughtChainItem[] {
   return [
@@ -42,7 +105,7 @@ const expandedKeys = ref<(string | number)[]>(['0', '1'])
 const running = ref(false)
 let timer: ReturnType<typeof setTimeout> | undefined
 
-/** 按 key 递归查找节点，模拟时方便直接改状态 */
+/** 按 key 递归查找节点，模拟时直接改状态 */
 function findStep(list: ThoughtChainItem[], key: string): ThoughtChainItem | undefined {
   for (const item of list) {
     if (item.key === key) return item
@@ -94,15 +157,58 @@ async function play() {
   running.value = false
 }
 
+/* ---------------- 消息操作 ---------------- */
+
+const actionItems: ActionItem[] = [
+  { key: 'copy', icon: 'copy' },
+  { key: 'reload', icon: 'reload' },
+  { key: 'like', icon: 'like' },
+  { key: 'dislike', icon: 'dislike' }
+]
+
+const liked = ref(false)
+const actionTip = ref('')
+let tipTimer: ReturnType<typeof setTimeout> | undefined
+
+function tip(text: string) {
+  actionTip.value = text
+  clearTimeout(tipTimer)
+  tipTimer = setTimeout(() => (actionTip.value = ''), 2000)
+}
+
+async function onAction(item: ActionItem) {
+  if (item.key === 'copy') {
+    try {
+      await navigator.clipboard.writeText('明天杭州多云转晴，18~26℃，东南风 2 级。')
+      tip('已复制回答')
+    } catch {
+      tip('当前环境不支持复制')
+    }
+    return
+  }
+
+  if (item.key === 'like') {
+    liked.value = !liked.value
+    tip(liked.value ? '感谢反馈' : '已取消')
+    return
+  }
+
+  if (item.key === 'reload') {
+    tip('重新执行中…')
+    void play()
+  }
+}
+
 onMounted(() => {
   void play()
 })
 
 onBeforeUnmount(() => {
   clearTimeout(timer)
+  clearTimeout(tipTimer)
 })
 
-/* ---------------- 演示二：静态数据 + 自定义内容插槽 ---------------- */
+/* ---------------- 基础用法数据 ---------------- */
 
 const simpleSteps: ThoughtChainItem[] = [
   {
@@ -136,22 +242,93 @@ const simpleSteps: ThoughtChainItem[] = [
       <p>Vue 3 + TypeScript 手写组件，参考 Ant Design / Ant Design X 的交互与视觉</p>
     </header>
 
-    <section class="card">
+    <!-- 组合演示：对话气泡 + 思维链 + 提示词 + 输入框 + 操作栏 -->
+    <section class="card chat">
       <div class="card__head">
         <div>
-          <h2 class="card__title">ThoughtChain 思维链</h2>
-          <p class="card__desc">模拟 Agent 执行过程：思考 → 调用工具 → 生成回答</p>
+          <h2 class="card__title">Agent 对话面板</h2>
+          <p class="card__desc">Bubble + ThoughtChain + Prompts + Sender + Actions 组合使用</p>
         </div>
-        <button class="btn" type="button" :disabled="running" @click="play">
-          {{ running ? '演示中…' : '重新演示' }}
-        </button>
+        <div class="chat__status">
+          <span class="chat__badge">
+            <i class="chat__dot" />
+            {{ running ? '执行中' : '已完成' }}
+          </span>
+          <button class="btn" type="button" :disabled="running" @click="play">
+            {{ running ? '执行中…' : '重新演示' }}
+          </button>
+        </div>
       </div>
 
-      <ThoughtChain v-model:expanded-keys="expandedKeys" :items="agentSteps" />
+      <div ref="chatRef" class="chat__messages">
+        <template v-for="message in messages" :key="message.id">
+          <Bubble
+              v-if="message.role === 'user'"
+              placement="end"
+              variant="outlined"
+              :content="message.content"
+          />
+          <Bubble v-else placement="start" name="XMUI 助手">
+            <ThoughtChain
+                v-if="message.chain"
+                v-model:expanded-keys="expandedKeys"
+                :items="agentSteps"
+            />
+            <template v-else>{{ message.content }}</template>
+
+            <template v-if="message.chain" #footer>
+              <div class="chat__footer">
+                <Actions
+                    :items="actionItems.map(item => item.key === 'like' ? { ...item, active: liked } : item)"
+                    size="small"
+                    @action="onAction"
+                />
+                <span v-if="actionTip" class="chat__tip">{{ actionTip }}</span>
+              </div>
+            </template>
+          </Bubble>
+        </template>
+      </div>
+
+      <div class="chat__composer">
+        <Prompts
+            class="chat__prompts"
+            title="试试这样问"
+            :items="promptItems"
+            :columns="2"
+            @item-click="onPrompt"
+        />
+
+        <Sender
+            ref="senderRef"
+            v-model="draft"
+            :loading="running"
+            show-count
+            :max-length="200"
+            placeholder="问点什么，Enter 发送，Shift + Enter 换行"
+            @submit="onSubmit"
+            @cancel="tip('已停止生成')"
+        >
+          <template #prefix>
+            <button class="tool-btn" type="button" title="添加附件" aria-label="添加附件">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                    d="M8 3.4v9.2M3.4 8h9.2"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </template>
+        </Sender>
+      </div>
     </section>
 
+    <!-- 单个组件用法 -->
     <section class="card">
-      <h2 class="card__title">基础用法</h2>
+      <h2 class="card__title">ThoughtChain 基础用法</h2>
       <p class="card__desc">small 尺寸、虚线连接线、自定义内容插槽</p>
 
       <ThoughtChain
@@ -167,6 +344,19 @@ const simpleSteps: ThoughtChainItem[] = [
     </section>
 
     <section class="card">
+      <h2 class="card__title">Bubble 与 Actions</h2>
+      <p class="card__desc">填充、描边、加载三种气泡，底部操作栏</p>
+
+      <div class="bubbles">
+        <Bubble placement="start" name="XMUI 助手" content="这是默认的填充样式。" />
+        <Bubble placement="start" name="XMUI 助手" variant="outlined" content="这是描边样式，适合内容较重的场景。" />
+        <Bubble placement="start" name="XMUI 助手" loading />
+        <Bubble placement="end" content="这是靠右的用户消息。" />
+        <Actions :items="actionItems" size="small" />
+      </div>
+    </section>
+
+    <section class="card">
       <h2 class="card__title">Cascade 级联选择</h2>
       <p class="card__desc">已有组件，保留演示入口</p>
       <Cascader />
@@ -176,7 +366,7 @@ const simpleSteps: ThoughtChainItem[] = [
 
 <style scoped>
 .page {
-  max-width: 780px;
+  max-width: 820px;
   margin: 0 auto;
   padding: 48px 24px 72px;
 }
@@ -214,7 +404,7 @@ const simpleSteps: ThoughtChainItem[] = [
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .card__title {
@@ -230,6 +420,26 @@ const simpleSteps: ThoughtChainItem[] = [
 
 .card__title + .card__desc {
   margin-bottom: 16px;
+}
+
+/* 对话面板 */
+.chat__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.chat__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f6ffed;
+  color: #389e0d;
+  font-size: 12px;
 }
 
 .btn {
@@ -253,6 +463,76 @@ const simpleSteps: ThoughtChainItem[] = [
 .btn:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.chat__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.chat__messages {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 460px;
+  padding: 4px 4px 8px;
+  overflow-y: auto;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.chat__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: -6px;
+}
+
+.chat__tip {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.chat__composer {
+  padding-top: 14px;
+}
+
+.chat__prompts {
+  margin-bottom: 12px;
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #e5e6eb;
+  border-radius: 6px;
+  background: #fff;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tool-btn:hover {
+  color: #1677ff;
+  border-color: #91caff;
+}
+
+.tool-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* 气泡示例 */
+.bubbles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .code {
