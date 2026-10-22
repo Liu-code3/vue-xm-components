@@ -1,0 +1,69 @@
+/**
+ * 设计变量（对齐 Ant Design 5 的种子变量）
+ * 组件只引用这里的变量，换主题时改一处即可
+ */
+:root {
+  /* 品牌色 */
+  --xm-color-primary: #1677ff;
+  --xm-color-primary-hover: #4096ff;
+  --xm-color-primary-active: #0958d9;
+  --xm-color-primary-bg: #e6f4ff;
+  --xm-color-primary-border: #91caff;
+
+  /* 功能色 */
+  --xm-color-success: #52c41a;
+  --xm-color-success-bg: #f6ffed;
+  --xm-color-success-border: #b7eb8f;
+  --xm-color-warning: #faad14;
+  --xm-color-warning-bg: #fffbe6;
+  --xm-color-warning-border: #ffe58f;
+  --xm-color-error: #ff4d4f;
+  --xm-color-error-bg: #fff2f0;
+  --xm-color-error-border: #ffccc7;
+
+  /* 文本 */
+  --xm-color-text: rgba(0, 0, 0, 0.88);
+  --xm-color-text-secondary: rgba(0, 0, 0, 0.65);
+  --xm-color-text-tertiary: rgba(0, 0, 0, 0.45);
+  --xm-color-text-quaternary: rgba(0, 0, 0, 0.25);
+
+  /* 边框与填充 */
+  --xm-color-border: #d9d9d9;
+  --xm-color-border-secondary: #f0f0f0;
+  --xm-color-fill: rgba(0, 0, 0, 0.04);
+  --xm-color-fill-secondary: rgba(0, 0, 0, 0.06);
+  --xm-color-bg: #ffffff;
+  --xm-color-bg-layout: #f5f5f5;
+  --xm-color-bg-mask: rgba(0, 0, 0, 0.45);
+
+  /* 圆角 */
+  --xm-radius-sm: 4px;
+  --xm-radius: 6px;
+  --xm-radius-lg: 8px;
+  --xm-radius-xl: 12px;
+
+  /* 字号 */
+  --xm-font-size-sm: 12px;
+  --xm-font-size: 14px;
+  --xm-font-size-lg: 16px;
+  --xm-font-size-xl: 20px;
+
+  /* 控件高度 */
+  --xm-control-height-sm: 24px;
+  --xm-control-height: 32px;
+  --xm-control-height-lg: 40px;
+
+  /* 间距 */
+  --xm-space-xs: 4px;
+  --xm-space-sm: 8px;
+  --xm-space: 12px;
+  --xm-space-lg: 16px;
+  --xm-space-xl: 24px;
+
+  /* 阴影与动效 */
+  --xm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02);
+  --xm-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  --xm-motion: 0.2s;
+  --xm-ease: cubic-bezier(0.645, 0.045, 0.355, 1);
+}
