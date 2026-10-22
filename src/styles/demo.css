@@ -1,0 +1,79 @@
+/* 演示页通用样式，只服务于示例页面，不属于组件库本身 */
+.demo-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demo-card {
+  padding: 20px 22px;
+  border: 1px solid var(--xm-color-border-secondary);
+  border-radius: var(--xm-radius-xl);
+  background: var(--xm-color-bg);
+  box-shadow: var(--xm-shadow-sm);
+}
+
+.demo-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.demo-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--xm-color-text);
+}
+
+.demo-desc {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--xm-color-text-tertiary);
+}
+
+.demo-section {
+  margin-top: 20px;
+}
+
+.demo-section:first-of-type {
+  margin-top: 0;
+}
+
+.demo-section__title {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--xm-color-text-tertiary);
+}
+
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-field {
+  width: 260px;
+}
+
+.demo-code {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--xm-color-border-secondary);
+  border-radius: var(--xm-radius);
+  background: #f7f8fa;
+  color: var(--xm-color-text-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

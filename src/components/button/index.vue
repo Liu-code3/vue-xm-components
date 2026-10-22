@@ -52,7 +52,8 @@ function onClick(event: MouseEvent) {
         { 'is-danger': danger, 'is-block': block, 'is-loading': loading }
       ]"
       :type="htmlType"
-      :disabled="disabled || loading"
+      :disabled="disabled"
+      :aria-busy="loading || undefined"
       @click="onClick"
   >
     <span v-if="loading" class="xm-btn__spinner" aria-hidden="true" />
@@ -84,12 +85,12 @@ function onClick(event: MouseEvent) {
     background-color var(--xm-motion) var(--xm-ease);
 }
 
-.xm-btn:hover:not(:disabled) {
+.xm-btn:hover:not(:disabled):not(.is-loading) {
   color: var(--xm-color-primary-hover);
   border-color: var(--xm-color-primary-hover);
 }
 
-.xm-btn:active:not(:disabled) {
+.xm-btn:active:not(:disabled):not(.is-loading) {
   color: var(--xm-color-primary-active);
   border-color: var(--xm-color-primary-active);
 }
@@ -147,13 +148,13 @@ function onClick(event: MouseEvent) {
   border-color: var(--xm-color-primary);
 }
 
-.xm-btn--primary:hover:not(:disabled) {
+.xm-btn--primary:hover:not(:disabled):not(.is-loading) {
   color: #fff;
   background: var(--xm-color-primary-hover);
   border-color: var(--xm-color-primary-hover);
 }
 
-.xm-btn--primary:active:not(:disabled) {
+.xm-btn--primary:active:not(:disabled):not(.is-loading) {
   color: #fff;
   background: var(--xm-color-primary-active);
   border-color: var(--xm-color-primary-active);
@@ -169,7 +170,7 @@ function onClick(event: MouseEvent) {
   background: transparent;
 }
 
-.xm-btn--text:hover:not(:disabled) {
+.xm-btn--text:hover:not(:disabled):not(.is-loading) {
   background: var(--xm-color-fill);
 }
 
@@ -177,7 +178,7 @@ function onClick(event: MouseEvent) {
   color: var(--xm-color-primary);
 }
 
-.xm-btn--link:hover:not(:disabled) {
+.xm-btn--link:hover:not(:disabled):not(.is-loading) {
   color: var(--xm-color-primary-hover);
   background: transparent;
 }
@@ -188,7 +189,7 @@ function onClick(event: MouseEvent) {
   border-color: var(--xm-color-error);
 }
 
-.xm-btn.is-danger:hover:not(:disabled) {
+.xm-btn.is-danger:hover:not(:disabled):not(.is-loading) {
   color: #ff7875;
   border-color: #ff7875;
 }
@@ -199,7 +200,7 @@ function onClick(event: MouseEvent) {
   border-color: var(--xm-color-error);
 }
 
-.xm-btn--primary.is-danger:hover:not(:disabled) {
+.xm-btn--primary.is-danger:hover:not(:disabled):not(.is-loading) {
   background: #ff7875;
   border-color: #ff7875;
 }
@@ -209,12 +210,17 @@ function onClick(event: MouseEvent) {
   background: transparent;
 }
 
-.xm-btn--text.is-danger:hover:not(:disabled) {
+.xm-btn--text.is-danger:hover:not(:disabled):not(.is-loading) {
   background: var(--xm-color-error-bg);
 }
 
 .xm-btn.is-block {
   width: 100%;
+}
+
+/* 加载中保留原样式，只禁用交互 */
+.xm-btn.is-loading {
+  cursor: default;
 }
 
 .xm-btn__icon {

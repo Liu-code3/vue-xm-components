@@ -114,11 +114,16 @@ function toggle() {
   line-height: 1;
   color: #fff;
   user-select: none;
-  padding: 0 8px 0 24px;
+  padding: 0 10px 0 26px;
 }
 
 .xm-switch.is-checked .xm-switch__text {
-  padding: 0 24px 0 8px;
+  padding: 0 26px 0 10px;
+}
+
+/* 带文案时给轨道留出文字宽度 */
+.xm-switch.has-text {
+  min-width: 56px;
 }
 
 .xm-switch__spinner {
